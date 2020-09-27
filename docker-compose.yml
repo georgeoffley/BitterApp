@@ -1,0 +1,46 @@
+version: '3'
+services:
+  api:
+    image: golang:latest
+    container_name: bitter-api-go
+    build: './api'
+    ports:
+      - 8080:8080
+    volumes:
+      - ./api:/go/src/app
+    command: go run main.go
+    depends_on: 
+      - 'db'
+  client:
+    container_name: bitter-web-page
+    image: 'node:13.12.0-alpine'
+    environment: 
+        - NODE_ENV=development
+    build: 
+      context: ./client/bitterclient
+      dockerfile: DockerFile
+    expose: 
+        - 3000
+    ports: 
+        - 3000:3000
+    volumes:
+      - './client'
+    stdin_open: true
+  db:
+    image: mongo:3.6.1
+    container_name: bitter-db-mongo
+    env_file: 
+        - .env
+    environment: 
+        - MONGO_INITDB_DATABASE=${MONGODB_DBNAME}
+        - MONGO_INITDB_USERNAME=${MONGODB_USERNAME}
+        - MONGO_INITDB_PASSWORD=${MONGODB_PASSWORD}
+    volumes: 
+        - mongodb:/data/db
+    ports:
+        - 27017:27017
+    command: mongod
+
+volumes:
+  mongodb:
+  mongodb_config:
